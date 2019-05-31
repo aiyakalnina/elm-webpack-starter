@@ -111,36 +111,40 @@ add1 model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "container" ]
-        [ header []
-            [ -- img [ src "/images/logo.png" ] []
-              span [ class "logo" ] []
-            , h1 [] [ text "Elm 0.19 Webpack Starter, with hot-reloading" ]
-            ]
-        , p [] [ text "Click on the button below to increment the state." ]
-        , div [ class "pure-g" ]
-            [ div [ class "pure-u-1-3" ]
-                [ button
-                    [ class "pure-button pure-button-primary"
-                    , onClick Inc
-                    ]
-                    [ text "+ 1" ]
-                , text <| String.fromInt model.counter
+    div []
+        [ div [ class "message" ]
+            []
+        , button [ class "btn-play" ]
+            [ text "Play again" ]
+        , div [ class "board" ]
+            [ div [ class "grid" ]
+                [ div [ class "grid__item", attribute "data-field" "0" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "1" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "2" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "3" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "4" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "5" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "6" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "7" ]
+                    []
+                , div [ class "grid__item", attribute "data-field" "8" ]
+                    []
                 ]
-            , div [ class "pure-u-1-3" ] []
-            , div [ class "pure-u-1-3" ]
-                [ button
-                    [ class "pure-button pure-button-primary"
-                    , onClick TestServer
-                    ]
-                    [ text "ping dev server" ]
-                , text model.serverMessage
-                ]
-            ]
-        , p [] [ text "Then make a change to the source code and see how the state is retained after you recompile." ]
-        , p []
-            [ text "And now don't forget to add a star to the Github repo "
-            , a [ href "https://github.com/simonh1000/elm-webpack-starter" ] [ text "elm-webpack-starter" ]
+            , div [ class "board__line-1" ]
+                []
+            , div [ class "board__line-2" ]
+                []
+            , div [ class "board__line-3" ]
+                []
+            , div [ class "board__line-4" ]
+                []
             ]
         ]
 
