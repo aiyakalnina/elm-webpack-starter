@@ -1,4 +1,4 @@
-port module Main exposing (Model, Msg(..), add1, init, main, toJs, update, view)
+port module Main exposing (Model, Msg(..), init, main, toJs, update, view)
 
 import Browser
 import Html exposing (..)
@@ -24,14 +24,19 @@ port toJs : String -> Cmd msg
 
 
 type alias Model =
-    { counter : Int
-    , serverMessage : String
+    { board : List Cell
     }
+
+
+type Cell
+    = Circle
+    | Cross
+    | Empty
 
 
 init : Int -> ( Model, Cmd Msg )
 init flags =
-    ( { counter = flags, serverMessage = "" }, Cmd.none )
+    ( { board = [ Empty, Circle, Cross ] }, Cmd.none )
 
 
 
@@ -41,72 +46,35 @@ init flags =
 
 
 type Msg
-    = Inc
-    | Set Int
-    | TestServer
-    | OnServerResponse (Result Http.Error String)
+    = Move
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        Inc ->
-            ( add1 model, toJs "Hello Js" )
-
-        Set m ->
-            ( { model | counter = m }, toJs "Hello Js" )
-
-        TestServer ->
-            let
-                expect =
-                    Http.expectJson OnServerResponse (Decode.field "result" Decode.string)
-            in
-            ( model
-            , Http.get { url = "/test", expect = expect }
-            )
-
-        OnServerResponse res ->
-            case res of
-                Ok r ->
-                    ( { model | serverMessage = r }, Cmd.none )
-
-                Err err ->
-                    ( { model | serverMessage = "Error: " ++ httpErrorToString err }, Cmd.none )
-
-
-httpErrorToString : Http.Error -> String
-httpErrorToString err =
-    case err of
-        BadUrl _ ->
-            "BadUrl"
-
-        Timeout ->
-            "Timeout"
-
-        NetworkError ->
-            "NetworkError"
-
-        BadStatus _ ->
-            "BadStatus"
-
-        BadBody s ->
-            "BadBody: " ++ s
-
-
-{-| increments the counter
-
-    add1 5 --> 6
-
--}
-add1 : Model -> Model
-add1 model =
-    { model | counter = model.counter + 1 }
+        _ ->
+            ( model, Cmd.none )
 
 
 
 -- ---------------------------
 -- VIEW
 -- ---------------------------
+
+
+viewCell : Cell -> Html Msg
+viewCell cell =
+    div [ class "grid__item", attribute "data-field" "0" ]
+        [ case cell of
+            Circle ->
+                text "o"
+
+            Cross ->
+                text "x"
+
+            _ ->
+                text ""
+        ]
 
 
 view : Model -> Html Msg
@@ -118,25 +86,27 @@ view model =
             [ text "Play again" ]
         , div [ class "board" ]
             [ div [ class "grid" ]
-                [ div [ class "grid__item", attribute "data-field" "0" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "1" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "2" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "3" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "4" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "5" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "6" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "7" ]
-                    []
-                , div [ class "grid__item", attribute "data-field" "8" ]
-                    []
-                ]
+                (List.map viewCell model.board)
+
+            -- [ div [ class "grid__item", attribute "data-field" "0" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "1" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "2" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "3" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "4" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "5" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "6" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "7" ]
+            --     []
+            -- , div [ class "grid__item", attribute "data-field" "8" ]
+            --     []
+            -- ]
             , div [ class "board__line-1" ]
                 []
             , div [ class "board__line-2" ]
