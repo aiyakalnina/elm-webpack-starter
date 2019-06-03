@@ -69,7 +69,7 @@ init flags =
 
 
 type Msg
-    = Move Int Player
+    = Move Int
 
 
 
@@ -87,18 +87,42 @@ type Msg
 
 
 checkPosition : Int -> Cell -> Int -> Cell -> Cell
-checkPosition position clickedCell currentPosition currentCell =
-    if position == currentPosition then
-        clickedCell
+checkPosition newPosition newCell currentPosition currentCell =
+    if newPosition == currentPosition then
+        newCell
 
     else
         currentCell
 
 
+
+-- winningCombos : List (List Int)
+-- winningCombos =
+--     [ [ 0, 1, 2 ]
+--     , [ 0, 3, 6 ]
+--     , [ 0, 4, 8 ]
+--     , [ 3, 4, 5 ]
+--     , [ 1, 4, 7 ]
+--     , [ 6, 4, 2 ]
+--     , [ 6, 7, 8 ]
+--     , [ 2, 5, 8 ]
+--     ]
+
+
+checkStatus : List Cell -> GameStatus
+checkStatus board =
+    case board of
+        [ Circle, Circle, Circle, Empty, Cross, Cross, Empty, Empty, Empty ] ->
+            Finished CirclePlayerWon
+
+        _ ->
+            Ongoing
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update message model =
     case message of
-        Move position player ->
+        Move position ->
             let
                 newCell =
                     case model.currentPlayer of
@@ -108,9 +132,11 @@ update message model =
                         CrossPlayer ->
                             Cross
 
+                -- update board
                 newBoard =
                     List.indexedMap (checkPosition position newCell) model.board
 
+                -- switch player
                 newPlayer =
                     case model.currentPlayer of
                         CirclePlayer ->
@@ -119,12 +145,13 @@ update message model =
                         CrossPlayer ->
                             CirclePlayer
 
-                -- update board
-                -- switch player
+                -- newStatus =
+                --     checkStatus model.board
             in
             ( { model
                 | board = newBoard
                 , currentPlayer = newPlayer
+                , status = checkStatus newBoard
               }
             , Cmd.none
             )
@@ -146,9 +173,9 @@ update message model =
 -- ---------------------------
 
 
-viewCell : Int -> Cell -> Player -> Html Msg
-viewCell position cell player =
-    div [ class "grid__item", onClick (Move position player) ]
+viewCell : Int -> Cell -> Html Msg
+viewCell position cell =
+    div [ class "grid__item", onClick (Move position) ]
         [ case cell of
             Circle ->
                 text "o"
@@ -159,6 +186,22 @@ viewCell position cell player =
             _ ->
                 text ""
         ]
+
+
+viewFinishedMessage : GameStatus -> Html Msg
+viewFinishedMessage status =
+    case status of
+        Finished CirclePlayerWon ->
+            text "Circle won!"
+
+        Finished CrossPlayerWon ->
+            text "Cross won"
+
+        Finished Draw ->
+            text "It's a draw!"
+
+        Ongoing ->
+            text ""
 
 
 
@@ -177,7 +220,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ div [ class "message" ]
-            []
+            [ viewFinishedMessage model.status ]
         , button [ class "btn-play" ]
             [ text "Play again" ]
         , div [ class "board" ]
@@ -208,7 +251,7 @@ main =
         , update = update
         , view =
             \m ->
-                { title = "Elm 0.19 starter"
+                { title = "Tic Tac Toe"
                 , body = [ view m ]
                 }
         , subscriptions = \_ -> Sub.none
