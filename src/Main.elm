@@ -1,6 +1,7 @@
 port module Main exposing (Model, Msg(..), init, main, toJs, update, view)
 
 import Browser
+import Debug
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -95,28 +96,88 @@ checkPosition newPosition newCell currentPosition currentCell =
         currentCell
 
 
+winningCombos : List (List Int)
+winningCombos =
+    [ [ 0, 1, 2 ]
+    , [ 0, 3, 6 ]
+    , [ 0, 4, 8 ]
+    , [ 3, 4, 5 ]
+    , [ 1, 4, 7 ]
+    , [ 6, 4, 2 ]
+    , [ 6, 7, 8 ]
+    , [ 2, 5, 8 ]
+    ]
 
--- winningCombos : List (List Int)
--- winningCombos =
---     [ [ 0, 1, 2 ]
---     , [ 0, 3, 6 ]
---     , [ 0, 4, 8 ]
---     , [ 3, 4, 5 ]
---     , [ 1, 4, 7 ]
---     , [ 6, 4, 2 ]
---     , [ 6, 7, 8 ]
---     , [ 2, 5, 8 ]
---     ]
+
+cellToString : Cell -> String
+cellToString c =
+    case c of
+        Circle ->
+            "O"
+
+        Cross ->
+            "X"
+
+        Empty ->
+            ""
+
+
+getCell : Int -> List Cell -> Cell
+getCell index board =
+    Maybe.withDefault Empty (List.drop index board |> List.head)
+
+
+checkCombo : Int -> Int -> Int -> List Cell -> GameStatus
+checkCombo index1 index2 index3 board =
+    let
+        firstCell =
+            getCell index1 board
+
+        secondCell =
+            getCell index2 board
+
+        thirdCell =
+            getCell index3 board
+    in
+    if firstCell == secondCell && secondCell == thirdCell then
+        case firstCell of
+            Circle ->
+                Finished CirclePlayerWon
+
+            Cross ->
+                Finished CrossPlayerWon
+
+            _ ->
+                Ongoing
+
+    else
+        Ongoing
 
 
 checkStatus : List Cell -> GameStatus
 checkStatus board =
-    case board of
-        [ Circle, Circle, Circle, Empty, Cross, Cross, Empty, Empty, Empty ] ->
-            Finished CirclePlayerWon
+    let
+        wins =
+            [ [ 0, 1, 2 ]
+            , [ 0, 3, 6 ]
+            , [ 0, 4, 8 ]
+            , [ 3, 4, 5 ]
+            , [ 1, 4, 7 ]
+            , [ 6, 4, 2 ]
+            , [ 6, 7, 8 ]
+            , [ 2, 5, 8 ]
+            ]
+    in
+    checkCombo 0 1 2 board
 
-        _ ->
-            Ongoing
+
+
+-- checkCombo [ 0, 1, 2 ] board
+-- case board of
+--     [ Circle, Circle, Circle, Empty, Cross, Cross, Empty, Empty, Empty ] ->
+--         Finished CirclePlayerWon
+--     _ ->
+--         Ongoing
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -158,16 +219,6 @@ update message model =
 
 
 
--- Move index player ->
---     let
---         myFunction i p j cell =
---             cell
---         newBoard =
---             List.map (myFunction index player) model.board
---         -- update board
---         -- switch player
---     in
---     ( { model | board = newBoard }, Cmd.none )
 -- ---------------------------
 -- VIEW
 -- ---------------------------
