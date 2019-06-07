@@ -96,16 +96,16 @@ checkPosition newPosition newCell currentPosition currentCell =
         currentCell
 
 
-winningCombos : List (List Int)
+winningCombos : List ( Int, Int, Int )
 winningCombos =
-    [ [ 0, 1, 2 ]
-    , [ 0, 3, 6 ]
-    , [ 0, 4, 8 ]
-    , [ 3, 4, 5 ]
-    , [ 1, 4, 7 ]
-    , [ 6, 4, 2 ]
-    , [ 6, 7, 8 ]
-    , [ 2, 5, 8 ]
+    [ ( 0, 1, 2 )
+    , ( 0, 3, 6 )
+    , ( 0, 4, 8 )
+    , ( 3, 4, 5 )
+    , ( 1, 4, 7 )
+    , ( 6, 4, 2 )
+    , ( 6, 7, 8 )
+    , ( 2, 5, 8 )
     ]
 
 
@@ -127,9 +127,12 @@ getCell index board =
     Maybe.withDefault Empty (List.drop index board |> List.head)
 
 
-checkCombo : Int -> Int -> Int -> List Cell -> GameStatus
-checkCombo index1 index2 index3 board =
+checkCombo : ( Int, Int, Int ) -> List Cell -> GameStatus
+checkCombo indexes board =
     let
+        ( index1, index2, index3 ) =
+            indexes
+
         firstCell =
             getCell index1 board
 
@@ -156,22 +159,50 @@ checkCombo index1 index2 index3 board =
 
 checkStatus : List Cell -> GameStatus
 checkStatus board =
+    -- checkCombo 0 1 2 board
     let
-        wins =
-            [ [ 0, 1, 2 ]
-            , [ 0, 3, 6 ]
-            , [ 0, 4, 8 ]
-            , [ 3, 4, 5 ]
-            , [ 1, 4, 7 ]
-            , [ 6, 4, 2 ]
-            , [ 6, 7, 8 ]
-            , [ 2, 5, 8 ]
-            ]
+        statusList =
+            List.map (\combo -> checkCombo combo board) winningCombos
+
+        listFilterFunc : GameStatus -> Bool
+        listFilterFunc gameStatus =
+            case gameStatus of
+                Finished _ ->
+                    True
+
+                Ongoing ->
+                    False
+
+        winningStatusList =
+            List.filter listFilterFunc statusList
+
+        emptyCellsLeftFilter : Cell -> Bool
+        emptyCellsLeftFilter boardCell =
+            case boardCell of
+                Empty ->
+                    True
+
+                _ ->
+                    False
+
+        emptyCellsLeft =
+            List.filter emptyCellsLeftFilter board
     in
-    checkCombo 0 1 2 board
+    case List.head winningStatusList of
+        Just gameStatus ->
+            gameStatus
+
+        Nothing ->
+            if List.length emptyCellsLeft == 0 then
+                Finished Draw
+
+            else
+                Ongoing
 
 
 
+-- checkStatus : List GameStatus -> GameStatus
+-- checkStatus
 -- checkCombo [ 0, 1, 2 ] board
 -- case board of
 --     [ Circle, Circle, Circle, Empty, Cross, Cross, Empty, Empty, Empty ] ->
